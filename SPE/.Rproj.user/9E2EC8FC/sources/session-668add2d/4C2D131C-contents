@@ -1,0 +1,115 @@
+domestique_q <- read.csv("C:/Users/Adnane/Downloads/FAOSTAT_data_en_4-15-2025.csv", stringsAsFactors = FALSE)
+
+
+domestique_q <- select(domestique_q, Area.Code..ISO3., Item, Year, Value)
+
+# Map FABLE country codes
+domestique_q$FABLE_Exporter <- Country_mapping_250120_updated_2$FABLE_cc[
+  match(domestique_q$Area.Code..ISO3., Country_mapping_250120_updated_2$ISO3_code)
+] 
+
+# Map item names using case_when
+domestique_q <- domestique_q %>%
+  mutate(FABLE_Item = case_when(
+    Item == "Coffee and products" ~ "Coffee",
+    Item == "Cocoa Beans and products" ~ "Cocoa",
+    Item == "Maize and products" ~ "Corn",
+    Item == "Wheat and products" ~ "Wheat",
+    Item == "Palm oil" ~ "Palm Oil",
+    Item == "Soyabeans" ~ "Soyabean",
+    Item == "Rice and products" ~ "Rice",
+    TRUE ~ Item  # Default: keep original Item if no match
+  ))
+
+# Rename and reorder columns
+domestique_q <- domestique_q %>%
+  rename(Exporter_ISO_Code = Area.Code..ISO3.) %>%
+  select(Exporter_ISO_Code, FABLE_Exporter, FABLE_Item, Year, Value)
+
+domestique_q<-domestique_q%>%
+  filter(!is.na(FABLE_Exporter))
+
+domestique_q_red<-domestique_q%>%
+  select(FABLE_Exporter, FABLE_Item, Year, Value)%>%
+  filter(Year== 2020)
+
+domestique_q_red <- domestique_q_red %>%
+  group_by(FABLE_Exporter, FABLE_Item) %>%
+  mutate(domestique_qty = mean(Value, na.rm = TRUE)) %>%
+  ungroup()
+
+domestique_q_red <- domestique_q_red%>%
+  mutate(FABLE_Importer = FABLE_Exporter)
+
+domestique_q_red <- domestique_q_red%>%
+  distinct()
+
+domestique_q_red <- domestique_q_red%>%
+  select(FABLE_Exporter,FABLE_Importer,FABLE_Item,Year,domestique_qty)
+
+Rice_domestiq<-domestique_q_red%>%
+  filter(FABLE_Item == "Rice")
+
+
+
+# Création des colonnes en faisant correspondre les codes ISO3 avec FABLE_cc
+dist_cepii$FABLE_Exporter <- Country_mapping_250120_updated_2$FABLE_cc[match(dist_cepii$iso_o, Country_mapping_250120_updated_2$ISO3_code)]
+dist_cepii$FABLE_Importer <- Country_mapping_250120_updated_2$FABLE_cc[match(dist_cepii$iso_d, Country_mapping_250120_updated_2$ISO3_code)]
+
+dist_cepii_2<-dist_cepii %>%
+  select(iso_o,FABLE_Exporter,iso_d,FABLE_Importer,distw)
+dist_cepii_2 <- dist_cepii_2 %>% filter(!is.na(FABLE_Exporter) & !is.na(FABLE_Importer))
+
+dist_cepii_2$distw <- as.numeric(dist_cepii_2$distw)
+
+dist_cepii_agg <- dist_cepii_2 %>%
+  group_by(FABLE_Exporter, FABLE_Importer) %>%
+  mutate(
+    dist_adj = 
+      mean(distw, na.rm = TRUE)
+    )%>%
+  ungroup()
+
+
+dist_cepii_fable<-dist_cepii_agg%>%
+  select(FABLE_Exporter,FABLE_Importer,dist_adj)%>%
+  distinct()
+
+
+
+
+
+
+
+FOLUR_trade_dt_2020 <- FOLUR_trade_dt %>%
+  filter(Year == 2020) %>%
+  full_join(domestique_q_red, by = c("FABLE_Exporter", "FABLE_Importer", "FABLE_Item", "Year")) %>%
+  mutate(
+    Q_ij = if_else(is.na(Q_ij), domestique_qty, Q_ij),
+    net_trade_ij = if_else(is.na(net_trade_ij), 0, net_trade_ij)
+  ) %>%
+  distinct(FABLE_Exporter, FABLE_Importer, FABLE_Item, Q_ij, .keep_all = TRUE) %>%
+  select(-domestique_qty)
+
+exporters <- unique(FOLUR_trade_dt_2020$FABLE_Exporter)
+importers <- unique(FOLUR_trade_dt_2020$FABLE_Importer)
+items <- unique(FOLUR_trade_dt_2020$FABLE_Item)
+
+# Créer toutes les combinaisons possibles pour l'année 2020
+all_combinations <- expand.grid(
+  FABLE_Exporter = exporters,
+  FABLE_Importer = importers,
+  FABLE_Item = items,
+  Year = 2020,
+  stringsAsFactors = FALSE
+)
+
+# Ajouter Q_ij et net_trade_ij à 0
+all_combinations <- all_combinations %>%
+  mutate(Q_ij = 0, net_trade_ij = 0)
+
+# Ajouter les colonnes manquantes de ton data frame si besoin (ex: d'autres colonnes non mentionnées ici)
+# Puis fusionner avec ton vrai trade dataset, pour compléter les trous
+
+FOLUR_trade_dt_2020 <- bind_rows(FOLUR_trade_dt_2020, all_combinations) %>%
+  distinct(FABLE_Exporter, FABLE_Importer, FABLE_Item, Year, .keep_all = TRUE)
