@@ -326,6 +326,15 @@ elast_estim_2020 <- elast_estim_2020 %>%
   ungroup()  # Retirer le groupe après l'ajustement
 
 
+elast_estim_2020<-elast_estim_2020%>%
+  rename(demand_elas = elas_d,
+         supply_elas = elas_s,
+         demand_q = demande_q,
+         Production_USD_t = prodprice_usd_t,
+         SPAM_Code = FABLE_Item)%>%
+  mutate(SPAM_Code = toupper(SPAM_Code))
+
+
 #Rice_elas
 rice_elas<-country_information_RICE %>%
   select(iso3,demand_elas,supply_elas)

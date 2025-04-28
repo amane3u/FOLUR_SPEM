@@ -7,7 +7,7 @@
 country_information_WHEA <- read.csv("C:/Users/Adnane/Desktop/SPE_inputs/Model_inputs/Country_data/country_information_WHEA.csv")
 country_information_MAIZ <- read.csv("C:/Users/Adnane/Desktop/SPE_inputs/Model_inputs/Country_data/country_information_MAIZ.csv")
 country_information_RICE <- read.csv("C:/Users/Adnane/Desktop/SPE_inputs/Model_inputs/Country_data/country_information_RICE.csv")
-country_information_RICE <- read.csv("C:/Users/Adnane/Desktop/SPE_inputs/Model_inputs/Country_data/country_information_RICE.csv")
+country_information_SOYB <- read.csv("C:/Users/Adnane/Desktop/SPE_inputs/Model_inputs/Country_data/country_information_SOYB.csv")
 
 
 
@@ -218,4 +218,206 @@ write.csv(bilateral_trade_cost_soyabean,
 
 
 # ############ Wheat #######
+bilateral_trade_cost_Wheat<-bilateral_trade_cost_crop%>%
+  filter(FABLE_Item=="Wheat")%>%
+  select(- FABLE_Item)%>%
+  mutate(SPAM_code = "WHEAT")
 
+
+
+#Country info 
+
+Wheat_elas<-country_information_WHEA %>%
+  select(iso3,demand_elas,supply_elas)
+
+Wheat_elas$FABLE_Exporter <- Country_mapping_250120_updated_2$FABLE_cc[
+  match(Wheat_elas$iso3, Country_mapping_250120_updated_2$ISO3_code)
+]
+
+Wheat_elas <- Wheat_elas %>%
+  filter(!is.na(FABLE_Exporter))
+
+
+Wheat_elas_2 <- Wheat_elas %>%
+  group_by(FABLE_Exporter) %>%
+  summarise(
+    demand_elas = mean(demand_elas, na.rm = TRUE),
+    supply_elas = mean(supply_elas, na.rm = TRUE)
+  )%>%
+  filter(FABLE_Exporter != "IRL")
+
+wheat_eq<-totaleq_folur_ct_adj%>%
+  filter(product=="Wheat"& year=="2020")%>%
+  select(location,product,demande_q,supply_q)%>%
+  rename(FABLE_Exporter = location,
+         FABLE_Item = product)
+
+
+country_info_step_1_WHEA<-Wheat_elas_2%>%
+  full_join(wheat_eq,by=c("FABLE_Exporter"))%>%
+  select(- FABLE_Item) 
+
+# Wheat_price
+
+
+
+wheat_prodprice<-FAO_prices_dt_red%>%
+  filter(FABLE_Item=="Wheat"& Year=="2020")%>%
+  rename(Production_USD_t =prodprice_i_agg_imp_final)%>%
+  select(-Year, - FABLE_Item)
+
+country_info_step_2_WHEA <- country_info_step_1_WHEA %>%
+  full_join(soyabean_prodprice, by = c("FABLE_Exporter")) %>%
+  filter(FABLE_Exporter != "IRL") %>%
+  rename(iso3 = FABLE_Exporter,
+         demand_q = demande_q) %>%
+  mutate(SPAM_code = "WHEAT")  
+
+
+# Extradited_csv
+
+write.csv(country_info_step_2_WHEA, 
+          file = "C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/country_information_WHEA.csv", 
+          row.names = FALSE)
+
+write.csv(bilateral_trade_cost_Wheat, 
+          file = "C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/bilateral_trade_cost_WHEA.csv", 
+          row.names = FALSE)
+
+
+
+
+
+
+
+
+
+# ############ Corn #######
+bilateral_trade_cost_corn<-bilateral_trade_cost_crop%>%
+  filter(FABLE_Item=="Corn")%>%
+  select(- FABLE_Item)%>%
+  mutate(SPAM_code = "CORN")
+
+
+
+#Country info 
+
+corn_elas<-country_information_MAIZ %>%
+  select(iso3,demand_elas,supply_elas)
+
+corn_elas$FABLE_Exporter <- Country_mapping_250120_updated_2$FABLE_cc[
+  match(corn_elas$iso3, Country_mapping_250120_updated_2$ISO3_code)
+]
+
+corn_elas <- corn_elas %>%
+  filter(!is.na(FABLE_Exporter))
+
+
+corn_elas_2 <- corn_elas %>%
+  group_by(FABLE_Exporter) %>%
+  summarise(
+    demand_elas = mean(demand_elas, na.rm = TRUE),
+    supply_elas = mean(supply_elas, na.rm = TRUE)
+  )%>%
+  filter(FABLE_Exporter != "IRL")
+
+corn_eq<-totaleq_folur_ct_adj%>%
+  filter(product=="Wheat"& year=="2020")%>%
+  select(location,product,demande_q,supply_q)%>%
+  rename(FABLE_Exporter = location,
+         FABLE_Item = product)
+
+
+country_info_step_1_CORN<-corn_elas_2%>%
+  full_join(corn_eq,by=c("FABLE_Exporter"))%>%
+  select(- FABLE_Item) 
+
+# Wheat_price
+
+
+
+corn_prodprice<-FAO_prices_dt_red%>%
+  filter(FABLE_Item=="Corn"& Year=="2020")%>%
+  rename(Production_USD_t =prodprice_i_agg_imp_final)%>%
+  select(-Year, - FABLE_Item)
+
+country_info_step_2_CORN <- country_info_step_1_CORN %>%
+  full_join(corn_prodprice, by = c("FABLE_Exporter")) %>%
+  filter(FABLE_Exporter != "IRL") %>%
+  rename(iso3 = FABLE_Exporter,
+         demand_q = demande_q) %>%
+  mutate(SPAM_code = "CORN")  
+
+
+# Extradited_csv
+
+write.csv(country_info_step_2_CORN, 
+          file = "C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/country_information_CORN.csv", 
+          row.names = FALSE)
+
+write.csv(bilateral_trade_cost_corn, 
+          file = "C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/bilateral_trade_cost_CORN.csv", 
+          row.names = FALSE)
+
+
+
+
+
+###### Cocoa #####
+bilateral_trade_cost_cocoa<-bilateral_trade_cost_crop%>%
+  filter(FABLE_Item=="Cocoa")%>%
+  select(- FABLE_Item)%>%
+  mutate(SPAM_code = "COCOA")
+
+country_info_step_2_COCOA<- elast_estim_2020 %>%
+  filter(SPAM_Code =="COCOA")
+
+
+##### COFFEE #####
+bilateral_trade_cost_coffee<-bilateral_trade_cost_crop%>%
+  filter(FABLE_Item=="Coffee")%>%
+  select(- FABLE_Item)%>%
+  mutate(SPAM_code = "COFFEE")
+
+
+country_info_step_2_COFFEE<- elast_estim_2020 %>%
+  filter(SPAM_Code =="COFFEE")
+
+###### PALM_Oil####
+
+
+bilateral_trade_cost_palm<-bilateral_trade_cost_crop%>%
+  filter(FABLE_Item=="Palm Oil")%>%
+  select(- FABLE_Item)%>%
+  mutate(SPAM_code = "PALM OIL")
+
+country_info_step_2_PALM<- elast_estim_2020 %>%
+  filter(SPAM_Code =="PALM OIL")
+
+
+
+#Extraction
+write.csv(country_info_step_2_PALM, 
+          file = "C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/country_information_PALM.csv", 
+          row.names = FALSE)
+
+write.csv(bilateral_trade_cost_palm, 
+          file = "C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/bilateral_trade_cost_PALM.csv", 
+          row.names = FALSE)
+
+
+write.csv(country_info_step_2_COFFEE, 
+          file = "C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/country_information_COFFEE.csv", 
+          row.names = FALSE)
+
+write.csv(bilateral_trade_cost_coffee, 
+          file = "C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/bilateral_trade_cost_COFFEE.csv", 
+          row.names = FALSE)
+
+write.csv(country_info_step_2_COCOA, 
+          file = "C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/country_information_COCOA.csv", 
+          row.names = FALSE)
+
+write.csv(bilateral_trade_cost_Cocoa, 
+          file = "C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/bilateral_trade_cost_COCOA.csv", 
+          row.names = FALSE)
