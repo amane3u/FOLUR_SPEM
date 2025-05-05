@@ -311,4 +311,65 @@ for (crop in crops) {
   writexl::write_xlsx(stats, file.path(data_path, paste0("net_trade_stats_", crop, ".xlsx")))
   
   print(paste("✅ Fichiers générés pour", crop))
+
 }
+
+
+
+
+
+
+library(dplyr)
+
+# Chemin de base et cultures (ajustées selon les dossiers)
+base_path <- "C:/Users/Adnane/Documents/GitHub/FOLUR_SPEM/data/Calibration_output"
+crops <- c("Coffee", "Corn", "Palm_oil", "Rice", "Soyabean", "Wheat")
+
+# Types de fichiers et noms des colonnes
+file_types <- c("calib_calibration_", "conprice_calibration_", "prodprice_calibration_", 
+                "tc_calibration_", "trade_calibration_")
+col_names <- list(
+  "calib_calibration_" = c("from_iso3", "to_iso3", "calib"),
+  "conprice_calibration_" = c("iso3", "to_iso3", "conprice_spem"),
+  "prodprice_calibration_" = c("iso3", "to_iso3", "prodprice_spem"),
+  "tc_calibration_" = c("from_iso3", "to_iso3", "tc_spem"),
+  "trade_calibration_" = c("from_iso3", "to_iso3", "q_spem")
+)
+
+# Boucle sur chaque culture
+for (crop in crops) {
+  crop_path <- file.path(base_path, crop)
+  
+  # Boucle sur chaque type de fichier
+  for (file_type in file_types) {
+    file_name <- paste0(file_type, crop, ".csv")
+    file_path <- file.path(crop_path, file_name)
+    
+    # Vérifier si le fichier existe
+    if (file.exists(file_path)) {
+      # Lire le fichier sans noms de colonnes
+      data <- read.csv(file_path, header = FALSE)
+      
+      # Ajuster selon le type de fichier
+      if (file_type %in% c("conprice_calibration_", "prodprice_calibration_")) {
+        # Ces fichiers ont 2 colonnes (iso3, valeur), on ajoute to_iso3 comme NA
+        colnames(data) <- c(col_names[[file_type]][1], col_names[[file_type]][3])
+        data <- data %>%
+          mutate(to_iso3 = NA) %>%
+          select(iso3, to_iso3, !!sym(col_names[[file_type]][3]))
+      } else {
+        # Les autres fichiers ont 3 colonnes (from_iso3, to_iso3, valeur)
+        colnames(data) <- col_names[[file_type]]
+      }
+      
+      # Sauvegarder
+      write.csv(data, file_path, row.names = FALSE)
+      print(paste("Colonnes ajoutées pour", file_name))
+    } else {
+      print(paste("Fichier non trouvé :", file_name))
+    }
+  }
+}
+
+
+
