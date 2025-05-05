@@ -15,7 +15,7 @@ country_information_SOYB <- read.csv("C:/Users/Adnane/Desktop/SPE_inputs/Model_i
 
 # Trade_data
 FOLUR_trade_dt_2020<-FOLUR_trade_dt_2020%>%
-  filter(FABLE_Exporter!="IRL"& FABLE_Importer!="IRL"& FABLE_Item!="Palm_oil")
+  filter(FABLE_Exporter!="IRL"& FABLE_Importer!="IRL")
 unique(FOLUR_trade_dt_2020$FABLE_Item)
 
 #Tarrif_data
@@ -43,6 +43,10 @@ bilateral_trade_cost_crop<-bil_trade%>%
   full_join(transport_costs_dt_test,by=c("FABLE_Exporter","FABLE_Importer","Year","FABLE_Item"))
 
 
+bilateral_trade_cost_crop_NA <- bilateral_trade_cost_crop %>% 
+  filter(if_any(everything(), is.na))
+
+
 
 # bil_trade_cost dataframe
 
@@ -57,7 +61,9 @@ bilateral_trade_cost_crop <- bilateral_trade_cost_crop %>%
          net_initial = net_trade_ij) %>%
   mutate(dummy_q_initial = ifelse(q_initial != 0, 1, 0))
 
-unique(bilateral_trade_cost_crop$FABLE_Item)
+write.csv(bilateral_trade_cost_crop, 
+          file = "C:/Users/Adnane/Documents/GitHub/FOLUR_SPEM/data/250430_bil_trade_cost_folur.csv", 
+          row.names = FALSE)
 
 
 
@@ -418,6 +424,47 @@ write.csv(country_info_step_2_COCOA,
           file = "C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/country_information_COCOA.csv", 
           row.names = FALSE)
 
-write.csv(bilateral_trade_cost_Cocoa, 
+write.csv(bilateral_trade_cost_cocoa, 
           file = "C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/bilateral_trade_cost_COCOA.csv", 
           row.names = FALSE)
+
+
+
+
+
+country_info_step_2_COCOA <- country_info_step_2_COCOA %>%
+  select(-demand_elas, -supply_elas) %>%
+  rename(demand_elas = demand_elas_corr, supply_elas = supply_elas_corr)
+
+country_info_step_2_COFFEE <- country_info_step_2_COFFEE %>%
+  select(-demand_elas, -supply_elas) %>%
+  rename(demand_elas = demand_elas_corr, supply_elas = supply_elas_corr)
+
+country_info_step_2_PALM <- country_info_step_2_PALM %>%
+  select(-demand_elas, -supply_elas) %>%
+  rename(demand_elas = demand_elas_corr, supply_elas = supply_elas_corr)
+
+
+
+unique(bilateral_trade_cost_crop$FABLE_Item)
+
+
+
+
+bil_palm <- read.csv("C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/Trade_cost/bilateral_trade_cost_PALM.csv")
+
+
+
+
+
+
+
+
+bilateral_trade_cost_crop$Regional_exporter <- Country_mapping_250120_updated_2$regional_lv[
+  match(bilateral_trade_cost_crop$from_iso3, Country_mapping_250120_updated_2$ISO3_code)
+]
+
+
+bilateral_trade_cost_crop$Regional_importer <- Country_mapping_250120_updated_2$regional_lv[
+  match(bilateral_trade_cost_crop$to_iso3, Country_mapping_250120_updated_2$ISO3_code)
+]

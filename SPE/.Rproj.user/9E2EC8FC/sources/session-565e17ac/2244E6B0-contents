@@ -402,6 +402,6 @@ mean_elas_summary <- mean_elas %>%
   select(iso3, demand_elas, supply_elas) %>%
   group_by(iso3) %>%
   summarise(
-    demand_elas = median(demand_elas, na.rm = TRUE),
-    supply_elas = median(supply_elas, na.rm = TRUE)
+    demand_elas_corr = median(demand_elas, na.rm = TRUE),
+    supply_elas_corr = median(supply_elas, na.rm = TRUE)
   )

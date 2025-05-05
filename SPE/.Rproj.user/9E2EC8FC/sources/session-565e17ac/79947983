@@ -3,25 +3,25 @@
     "path": "~/GitHub/FOLUR_SPEM/Program/250425_new_stracture.R",
     "project_path": null,
     "type": "r_source",
-    "hash": "0",
+    "hash": "767288821",
     "contents": "",
-    "dirty": true,
+    "dirty": false,
     "created": 1745575874064.0,
     "source_on_save": false,
-    "relative_order": 3,
+    "relative_order": 1,
     "properties": {
         "tempName": "Untitled1",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "463,24",
-        "scrollLine": "443"
+        "cursorPosition": "426,0",
+        "scrollLine": "403"
     },
     "folds": "",
-    "lastKnownWriteTime": 1745857664,
+    "lastKnownWriteTime": 1746023939,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1745934745003,
+    "last_content_update": 1746023939082,
     "read_only": false,
     "read_only_alternatives": []
 }

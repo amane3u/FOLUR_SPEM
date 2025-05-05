@@ -1,0 +1,28 @@
+{
+    "id": "A90AA2E3",
+    "path": null,
+    "project_path": null,
+    "type": "object_explorer",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1746040933232.0,
+    "source_on_save": false,
+    "relative_order": 8,
+    "properties": {
+        "id": "0ccf76d964c7405abdf3893e4066419c",
+        "name": "trade_step1_list",
+        "title": "trade_step1_list",
+        "language": "R",
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 2430813759048,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1746040933232,
+    "read_only": false,
+    "read_only_alternatives": []
+}

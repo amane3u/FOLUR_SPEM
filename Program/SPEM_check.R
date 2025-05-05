@@ -68,11 +68,11 @@ print(total_net_trade_world_step1)
 ### Étape 2 : Charger et analyser trade_calibration_RICE.csv (q_step2)
 
 # Charger les fichiers CSV
-conprice <- read.csv(paste0(path, "conprice_calibration_RICE.csv"), header = FALSE)
-prodprice <- read.csv(paste0(path, "prodprice_calibration_RICE.csv"), header = FALSE)
-tc <- read.csv(paste0(path, "tc_calibration_RICE.csv"), header = FALSE)
-trade <- read.csv(paste0(path, "trade_calibration_RICE.csv"), header = FALSE)
-calib <- read.csv(paste0(path, "calib_calibration_RICE.csv"), header = FALSE)
+conprice <- read.csv(paste0(path, "conprice_calibration_COCOA.csv"), header = FALSE)
+prodprice <- read.csv(paste0(path, "prodprice_calibration_COCOA.csv"), header = FALSE)
+tc <- read.csv(paste0(path, "tc_calibration_COCOA.csv"), header = FALSE)
+trade <- read.csv(paste0(path, "trade_calibration_COCOA.csv"), header = FALSE)
+calib <- read.csv(paste0(path, "calib_calibration_COCOA.csv"), header = FALSE)
 
 # Renommer les colonnes pour plus de clarté
 colnames(conprice) <- c("iso3", "conprice")

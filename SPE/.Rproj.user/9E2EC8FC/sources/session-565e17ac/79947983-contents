@@ -15,7 +15,7 @@ country_information_SOYB <- read.csv("C:/Users/Adnane/Desktop/SPE_inputs/Model_i
 
 # Trade_data
 FOLUR_trade_dt_2020<-FOLUR_trade_dt_2020%>%
-  filter(FABLE_Exporter!="IRL"& FABLE_Importer!="IRL"& FABLE_Item!="Palm_oil")
+  filter(FABLE_Exporter!="IRL"& FABLE_Importer!="IRL")
 unique(FOLUR_trade_dt_2020$FABLE_Item)
 
 #Tarrif_data
@@ -43,6 +43,10 @@ bilateral_trade_cost_crop<-bil_trade%>%
   full_join(transport_costs_dt_test,by=c("FABLE_Exporter","FABLE_Importer","Year","FABLE_Item"))
 
 
+bilateral_trade_cost_crop_NA <- bilateral_trade_cost_crop %>% 
+  filter(if_any(everything(), is.na))
+
+
 
 # bil_trade_cost dataframe
 
@@ -57,7 +61,9 @@ bilateral_trade_cost_crop <- bilateral_trade_cost_crop %>%
          net_initial = net_trade_ij) %>%
   mutate(dummy_q_initial = ifelse(q_initial != 0, 1, 0))
 
-unique(bilateral_trade_cost_crop$FABLE_Item)
+write.csv(bilateral_trade_cost_crop, 
+          file = "C:/Users/Adnane/Documents/GitHub/FOLUR_SPEM/data/250430_bil_trade_cost_folur.csv", 
+          row.names = FALSE)
 
 
 
@@ -418,7 +424,7 @@ write.csv(country_info_step_2_COCOA,
           file = "C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/country_information_COCOA.csv", 
           row.names = FALSE)
 
-write.csv(bilateral_trade_cost_Cocoa, 
+write.csv(bilateral_trade_cost_cocoa, 
           file = "C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/bilateral_trade_cost_COCOA.csv", 
           row.names = FALSE)
 
@@ -426,6 +432,26 @@ write.csv(bilateral_trade_cost_Cocoa,
 
 
 
+country_info_step_2_COCOA <- country_info_step_2_COCOA %>%
+  select(-demand_elas, -supply_elas) %>%
+  rename(demand_elas = demand_elas_corr, supply_elas = supply_elas_corr)
+
+country_info_step_2_COFFEE <- country_info_step_2_COFFEE %>%
+  select(-demand_elas, -supply_elas) %>%
+  rename(demand_elas = demand_elas_corr, supply_elas = supply_elas_corr)
+
+country_info_step_2_PALM <- country_info_step_2_PALM %>%
+  select(-demand_elas, -supply_elas) %>%
+  rename(demand_elas = demand_elas_corr, supply_elas = supply_elas_corr)
+
+
+
+unique(bilateral_trade_cost_crop$FABLE_Item)
+
+
+
+
+bil_palm <- read.csv("C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/Trade_cost/bilateral_trade_cost_PALM.csv")
 
 
 
@@ -434,58 +460,11 @@ write.csv(bilateral_trade_cost_Cocoa,
 
 
 
+bilateral_trade_cost_crop$Regional_exporter <- Country_mapping_250120_updated_2$regional_lv[
+  match(bilateral_trade_cost_crop$from_iso3, Country_mapping_250120_updated_2$ISO3_code)
+]
 
 
-
-
-
-
-
-
-
-
-# Afficher les lignes avec NA
-na_rows <- bilateral_trade_cost_coffee[!complete.cases(bilateral_trade_cost_coffee), ]
-print(na_rows)
-
-bilateral_trade_cost_coffee$trade_USD_t[bilateral_trade_cost_coffee$from_iso3 == "IND" & 
-                                          bilateral_trade_cost_coffee$to_iso3 == "IND" & 
-                                          is.na(bilateral_trade_cost_coffee$trade_USD_t)] <- 168.7624
-
-# Remplacer NA pour IDN -> IDN
-bilateral_trade_cost_coffee$trade_USD_t[bilateral_trade_cost_coffee$from_iso3 == "IDN" & 
-                                          bilateral_trade_cost_coffee$to_iso3 == "IDN" & 
-                                          is.na(bilateral_trade_cost_coffee$trade_USD_t)] <- 129.9718
-
-# Vérifier
-print(bilateral_trade_cost_coffee[!complete.cases(bilateral_trade_cost_coffee), ])
-
-bilateral_trade_cost_coffee <- read.csv("C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/Trade_cost/bilateral_trade_cost_COFFEE.csv", stringsAsFactors = FALSE)
-country_information_SUNF <- read.csv("C:/Users/Adnane/Desktop/SPE_inputs/Model_inputs/Country_data/country_information_SUNF.csv")
-
-country_information_RICE <- read.csv("C:/Users/Adnane/Desktop/SPE_inputs/SPE_adaptation_adnane/Model_input/Country_data/country_information_RICE.csv", stringsAsFactors = FALSE)
-colnames(country_information_COCOA)
-
-# Calcul de la moyenne des colonnes numériques concernées
-mean_demand_elas <- mean(country_information_COCOA$demand_elas, na.rm = TRUE)
-mean_supply_elas <- mean(country_information_COCOA$supply_elas, na.rm = TRUE)
-mean_demand_q <- mean(country_information_COCOA$demand_q, na.rm = TRUE)
-mean_supply_q <- mean(country_information_COCOA$supply_q, na.rm = TRUE)
-
-# Récupérer le SPAM_Code (on suppose qu’il est le même partout)
-spam_code <- unique(country_information_COCOA$SPAM_Code)
-if(length(spam_code) > 1) stop("SPAM_Code n'est pas unique, précise la valeur à utiliser.")
-
-# Créer la nouvelle ligne
-new_row <- data.frame(
-  iso3 = "RWA",
-  SPAM_Code = spam_code[1],
-  demand_elas = mean_demand_elas,
-  supply_elas = mean_supply_elas,
-  demand_q = mean_demand_q,
-  supply_q = mean_supply_q,
-  Production_USD_t = NA  # à remplacer si tu as une valeur
-)
-
-# Ajouter la ligne au data frame
-country_information_COCOA <- rbind(country_information_COCOA, new_row)
+bilateral_trade_cost_crop$Regional_importer <- Country_mapping_250120_updated_2$regional_lv[
+  match(bilateral_trade_cost_crop$to_iso3, Country_mapping_250120_updated_2$ISO3_code)
+]
